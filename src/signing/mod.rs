@@ -1,5 +1,5 @@
 use sawtooth_sdk::signing;
-use crate::{Result, Error};
+use super::{Result, Error};
 
 static ALG_NAME: &'static str = "secp256k1";
 
@@ -27,7 +27,9 @@ impl Signer {
     }
 
     pub fn get_public_key(&self ) -> Result<String> {
-        self.context.get_public_key(self.key.as_ref()).map(|key| key.as_hex()).map_err(|e| Error::Signing(e))
+        self.context.get_public_key(self.key.as_ref())
+            .map(|key| key.as_hex())
+            .map_err(|e| Error::Signing(e))
     }
 
     pub fn sign(&self, message: &[u8]) -> Result<String> {
