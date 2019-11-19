@@ -9,7 +9,9 @@ pub mod wallet;
 // sawtooth toolkit
 pub mod ns;
 pub mod tx;
+pub mod tp;
 pub mod signing;
+pub mod messages;
 
 // ----------------------------------------------------------------------------
 

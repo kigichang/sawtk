@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package tp;
+
+option go_package = "github.com/dairaga/sawtk/tp";
+
+// 指令
+message TPRequest {
+    int32 cmd = 1;          // 指令代碼
+    bytes payload = 2;      // 指令資料
+}
