@@ -4,8 +4,8 @@ static EMPTY_HASH: &'static str = "e3b0c44298fc1c14";
 
 pub trait Namespace {
     fn make_address(&self, input: &str) -> String;
-    fn name(&self) -> &str;
-    fn prefix(&self) -> &str;
+    fn name(&self) -> String;
+    fn prefix(&self) -> String;
     //fn validate(&self, input: &str) -> bool;
 }
 
@@ -18,12 +18,12 @@ struct GeneralNS {
 
 impl Namespace for GeneralNS {
     
-    fn name(&self) -> &str {
-        &self.name
+    fn name(&self) -> String {
+        self.name.clone()
     }
 
-    fn prefix(&self) -> &str {
-        &self.prefix
+    fn prefix(&self) -> String {
+        self.prefix.clone()
     }
 
     fn make_address(&self, input: &str) -> String {
@@ -44,12 +44,12 @@ struct SawtoothNS {
 }
 
 impl Namespace for SawtoothNS {
-    fn name(&self) -> &str {
-        &self.name
+    fn name(&self) -> String {
+        self.name.clone()
     }
 
-    fn prefix(&self) -> &str {
-        &self.prefix
+    fn prefix(&self) -> String {
+        self.prefix.clone()
     }
 
     fn make_address(&self, input: &str) -> String {
