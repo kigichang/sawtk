@@ -27,6 +27,7 @@ impl Namespace for GeneralNS {
     }
 
     fn make_address(&self, input: &str) -> String {
+
         let mut ret = String::new();
 
         ret.push_str(&self.prefix);
@@ -53,6 +54,7 @@ impl Namespace for SawtoothNS {
     }
 
     fn make_address(&self, input: &str) -> String {
+
         let mut ret = String::new();
         ret.push_str(&self.prefix);
         
@@ -73,8 +75,7 @@ impl Namespace for SawtoothNS {
 // ----------------------------------------------------------------------------
 
 fn prefix(name: &str) -> String {
-    let key = util::sha512(name);
-    String::from(&key[..6])
+    String::from(&util::sha512(name)[..6])
 }
 
 pub fn new(name: &str) -> Box<dyn Namespace> {

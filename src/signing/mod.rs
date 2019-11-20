@@ -14,6 +14,7 @@ pub struct Signer {
 impl Signer {
    
     pub fn from_hex(key: &str) -> Result<Self> {
+
         let context = create_context()?;
 
         signing::secp256k1::Secp256k1PrivateKey::from_hex(key)
@@ -26,17 +27,21 @@ impl Signer {
             .map_err(|e| Error::Signing(e))
     }
 
-    pub fn get_public_key(&self ) -> Result<String> {
+    pub fn get_public_key(&self) -> Result<String> {
+
         self.context.get_public_key(self.key.as_ref())
             .map(|key| key.as_hex())
             .map_err(|e| Error::Signing(e))
     }
 
     pub fn sign(&self, message: &[u8]) -> Result<String> {
-        self.context.sign(message, self.key.as_ref()).map_err(|e| Error::Signing(e))
+
+        self.context.sign(message, self.key.as_ref())
+            .map_err(|e| Error::Signing(e))
     }
 
     pub fn new() -> Result<Self> {
+
         create_context().and_then(|context| {
             new_random_private_key().map(|k| {
                 Signer {

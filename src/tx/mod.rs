@@ -17,24 +17,37 @@ pub struct Payload {
 }
 
 impl Payload {
-    pub fn new(family_name: String, family_version: String, msg: &dyn Message, inputs: Vec<String>, outputs: Vec<String>) -> Result<Self> {
+    pub fn new(
+        family_name:    String, 
+        family_version: String, 
+        msg:            &dyn Message, 
+        inputs:         &[String], 
+        outputs:        &[String]
+    ) -> Result<Self> {
+
         msg.write_to_bytes()
             .map(|b| {
                 Payload { 
                     family_name: family_name,
                     family_version: family_version,
                     payload: b,
-                    inputs: inputs,
-                    outputs: outputs,
+                    inputs: Vec::from(inputs),
+                    outputs: Vec::from(outputs),
                 }
             })
             .map_err(|e| Error::Protobuf(e))
     }
 
-    pub fn tx_header(&self, batcher_public_key: &str, signer_public_key: &str, dependencies: Vec<String>) -> TransactionHeader {
+    pub fn tx_header(
+            &self, 
+            batcher_public_key: &str, 
+            signer_public_key:  &str, 
+            dependencies:       &[String]
+    ) -> TransactionHeader {
+
         TransactionHeader {
             batcher_public_key: String::from(batcher_public_key),
-            dependencies: RepeatedField::from_vec(dependencies),
+            dependencies: RepeatedField::from_slice(dependencies),
             family_name: self.family_name.clone(),
             family_version: self.family_version.clone(),
             inputs: RepeatedField::from_slice(&self.inputs),
@@ -58,13 +71,25 @@ impl<'a> Builder<'a> {
         Builder { signer: signer }
     }
 
-    pub fn header(&self, batcher_public_key: &str, data: &Payload, dependencies: Vec<String>) -> Result<TransactionHeader> {
+    pub fn header(
+        &self,
+        batcher_public_key: &str,
+        data: &Payload,
+        dependencies: &[String]
+    ) -> Result<TransactionHeader> {
+
         let signer_public_key = self.signer.get_public_key()?;
 
         Ok(data.tx_header(batcher_public_key, &signer_public_key, dependencies))
     }
 
-    pub fn build(&self, batcher_public_key: &str, data: &Payload, dependencies: Vec<String>) -> Result<Transaction> {
+    pub fn build(
+        &self, 
+        batcher_public_key: &str, 
+        data:               &Payload, 
+        dependencies:       &[String]
+    ) -> Result<Transaction> {
+
         let header = self.header(batcher_public_key, data, dependencies)?;
         let mut header_bytes: Vec<u8> = Vec::new();
 
@@ -98,7 +123,7 @@ impl<'a> Batcher<'a> {
         self.signer.get_public_key()
     }
 
-    fn header(&self, transactions: &Vec<Transaction>) -> Result<BatchHeader> {
+    fn header(&self, transactions: &[Transaction]) -> Result<BatchHeader> {
         let pub_key = self.get_public_key()?;
         let ids:Vec<String> = transactions.iter().map(|x| String::from(&x.header_signature)).collect();
 
@@ -112,8 +137,8 @@ impl<'a> Batcher<'a> {
         )
     }
 
-    pub fn build(&self, transactions: Vec<Transaction>) -> Result<Batch> {
-        let header = self.header(&transactions)?;
+    pub fn build(&self, transactions: &[Transaction]) -> Result<Batch> {
+        let header = self.header(transactions)?;
         let mut header_bytes: Vec<u8> = Vec::new();
 
         match header.write_to_vec(&mut header_bytes) {
@@ -132,9 +157,9 @@ impl<'a> Batcher<'a> {
         }
     }
 
-    pub fn to_list(batches: Vec<Batch>) -> BatchList {
+    pub fn to_list(batches: &[Batch]) -> BatchList {
         BatchList {
-            batches: RepeatedField::from(batches),
+            batches: RepeatedField::from_slice(batches),
             ..BatchList::default()
         }
     }
