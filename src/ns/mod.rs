@@ -1,12 +1,12 @@
+use std::fmt;
 use super::util;
 
 static EMPTY_HASH: &'static str = "e3b0c44298fc1c14";
 
-pub trait Namespace {
+pub trait Namespace: fmt::Display {
     fn make_address(&self, input: &str) -> String;
     fn name(&self) -> String;
     fn prefix(&self) -> String;
-    //fn validate(&self, input: &str) -> bool;
 }
 
 // ----------------------------------------------------------------------------
@@ -34,6 +34,14 @@ impl Namespace for GeneralNS {
         ret.push_str(&util::sha512(input)[..64]);
 
         ret
+    }
+
+    
+}
+
+impl fmt::Display for GeneralNS {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "name: {}, prefix: {}", self.name, self.prefix)
     }
 }
 
@@ -72,24 +80,41 @@ impl Namespace for SawtoothNS {
     }
 }
 
+impl fmt::Display for SawtoothNS {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "sawtooth: {}, prefix: {}", self.name, self.prefix)
+    }
+}
+
 // ----------------------------------------------------------------------------
 
 fn prefix(name: &str) -> String {
     String::from(&util::sha512(name)[..6])
 }
 
-pub fn new(name: &str) -> Box<dyn Namespace> {
-    if name == "000000" {
-        return Box::new(SawtoothNS {
-            name: String::from("settings"),
-            prefix: String::from("000000"),
-        });
-    }
-
-    Box::new(GeneralNS {
+pub fn new(name: &str) -> impl Namespace {
+    GeneralNS {
         name: String::from(name),
         prefix: prefix(name),
-    })
+    }
+}
+
+pub fn sawtooth(family: &str) -> impl Namespace {
+    match family {
+        "000000" | "settings" => {
+            SawtoothNS {
+                name: String::from("settings"),
+                prefix: String::from("000000"),
+            }
+        },
+        "00001d" | "identity" => {
+            SawtoothNS {
+                name: String::from("identity"),
+                prefix: String::from("00001d"),
+            }
+        },
+        _ => panic!("unknown family")
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -104,7 +129,7 @@ mod tests {
         assert_eq!("1cf126", ns1.prefix());
         assert_eq!("intkey", ns1.name());
 
-        let ns2 = new("000000");
+        let ns2 = sawtooth("000000");
 
         assert_eq!("000000", ns2.prefix());
         assert_eq!("settings", ns2.name());
