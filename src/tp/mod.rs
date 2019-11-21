@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 use sawtooth_sdk::messages::processor::TpProcessRequest;
 use sawtooth_sdk::processor::handler::ApplyError;
-use sawtooth_sdk::processor::handler::{TransactionHandler, TransactionContext};
+use sawtooth_sdk::processor::handler::TransactionContext;
 use protobuf::{self, Message};
-use crate::ns::Namespace;
+//use crate::ns::Namespace;
 use crate::messages::request::TPRequest;
 
 // -----------------------------------------------------------------------------
@@ -83,6 +83,12 @@ pub fn add_event(ctx: &dyn TransactionContext, event_type: String, attributes: V
 
 // -----------------------------------------------------------------------------
 
+pub fn to_tp_request(req: &TpProcessRequest) -> Result<TPRequest, ApplyError> {
+    protobuf::parse_from_bytes::<TPRequest>(&req.payload).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))
+}
+
+// -----------------------------------------------------------------------------
+/*
 pub struct Context<'a> {
     ctx: &'a dyn TransactionContext,
     cmd: i32,
@@ -136,20 +142,20 @@ pub fn make_handle_func(f: impl Fn(&mut Context, &TPRequest) -> Result<(), Apply
     Box::new(f) as HandleFunc
 }
 
-pub struct Handler<'a> {
+pub struct Handler {
     family_name: String,
     family_versions: Vec<String>,
-    namespaces: Vec<&'a dyn Namespace>,
+    namespaces: Vec<dyn Namespace>,
     handles: HashMap<i32, HandleFunc>,
 }
 
-impl<'a> Handler<'a> {
+impl Handler {
 
-    pub fn new(family_name: &str, family_versions: &[String], namespaces: &[&'static dyn Namespace]) -> Self {
+    pub fn new(family_name: &str, family_versions: &[String], namespaces: Vec<dyn Namespace>) -> Self {
         Handler { 
             family_name: String::from(family_name),
             family_versions: Vec::from(family_versions),
-            namespaces: Vec::from(namespaces),
+            namespaces: namespaces,
             handles: HashMap::new(),
         }
     }
@@ -170,7 +176,7 @@ impl<'a> TransactionHandler for Handler<'a> {
     }
 
     fn namespaces(&self) -> Vec<String> {
-        self.namespaces.iter().map(|ns| ns.prefix()).collect::<Vec<_>>()
+        self.namespaces.map(|ns| ns.prefix()).collect::<Vec<_>>()
     }
 
     fn apply(&self, request: &TpProcessRequest, context: &mut dyn TransactionContext) -> Result<(), ApplyError> {
@@ -189,3 +195,4 @@ impl<'a> TransactionHandler for Handler<'a> {
         }
     }
 }
+*/
