@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use sawtooth_sdk::messages::processor::TpProcessRequest;
 use sawtooth_sdk::processor::handler::ApplyError;
 use sawtooth_sdk::processor::handler::TransactionContext;
@@ -8,35 +8,54 @@ use crate::messages::request::TPRequest;
 
 // -----------------------------------------------------------------------------
 
-pub fn get_state_entries(ctx: &dyn TransactionContext, data: &mut HashMap<String, Box<dyn Message>>) -> Result<(), ApplyError> {
-
-    let addresses = data.keys().cloned().collect::<Vec<_>>();
-
-    let result = ctx.get_state_entries(&addresses).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
-
-    let x1 = data.keys().cloned().collect::<HashSet<_>>();
-    let x2 = result.iter().map(|x| String::from(&x.0)).collect::<HashSet<_>>();
-    let not_found = x1.difference(&x2);
-
-    for x in not_found {
-        data.remove(x);
-    }
-
-
-    for rs in result {
-        let msg = data.get_mut(&rs.0);
-        if msg.is_none() {
-            continue;
-        }
-
-        msg.unwrap()
-            .merge_from_bytes(&rs.1)
-            .map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
-    }
-
-    Ok(())
+pub struct States {
+    data: HashMap<String, Vec<u8>>,
 }
 
+impl States {
+
+    pub fn contains(&self, address: &str) -> bool {
+        self.data.contains_key(address)
+    }
+
+    pub fn to<T: protobuf::Message>(&self, address: &str) -> Result<T, ApplyError> {
+        let mut msg = T::new();
+        self.to_message(address, &mut msg)?;
+        Ok(msg)
+    }
+
+    pub fn to_message(&self, address: &str, msg: &mut dyn protobuf::Message) -> Result<(), ApplyError> {
+        let bytes = self.data.get(address).ok_or(ApplyError::InvalidTransaction(format!("{} not found", address)))?;
+        msg.merge_from_bytes(bytes).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
+        Ok(())
+    }
+}
+
+impl From<Vec<(String, Vec<u8>)>> for States {
+    fn from(result: Vec<(String, Vec<u8>)>) -> Self {
+        let mut data = HashMap::new();
+
+        for rs in result.into_iter() {
+            data.insert(rs.0, rs.1);
+        }
+
+        States { data: data }
+    }
+}
+
+
+// -----------------------------------------------------------------------------
+
+pub fn get_state_entries(ctx: &dyn TransactionContext, addresses: Vec<String>) -> Result<(States), ApplyError> {
+    let result = ctx.get_state_entries(&addresses).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
+    Ok(States::from(result))
+}
+
+pub fn get_state_entry<T: protobuf::Message>(ctx: &dyn TransactionContext, address: &str) -> Result<T, ApplyError> {
+    get_state_entries(ctx, vec![address.to_string()])?
+        .to::<T>(address)
+}
+/*
 pub fn get_state_entry(ctx: &dyn TransactionContext, address: &str, data: Box<&mut dyn Message>) -> Result<(), ApplyError> {
 
     let result = ctx.get_state_entry(address).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
@@ -49,6 +68,7 @@ pub fn get_state_entry(ctx: &dyn TransactionContext, address: &str, data: Box<&m
         },
     }
 }
+*/
 
 pub fn delete_state_entries(ctx: &dyn TransactionContext, addresses: &[String]) -> Result<Vec<String>, ApplyError> {
     ctx.delete_state_entries(addresses).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))
