@@ -64,6 +64,11 @@ mod tests {
         assert_eq!("534d8ffcfc87efb413bc331581b60745073e3fa69e96ada01beca2e4c1aebca1a1f892", address(&ns3, "Brahmā"));
         assert_eq!("534d8fb42a9d85eebee9a4b8613bb399e3f3345e73535acac74ca700ef7e9e2f848a0a", address(&ns3, "Viṣṇu"));
         assert_eq!("534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206", address(&ns3, "Śiva"));
+
+        assert_eq!("cc207f", prefix("df.citizen.citizen"));
+        assert_eq!("69e807", prefix("df.citizen.service"));
+        assert_eq!("12515f", prefix("df.citizen.transfer"));
+        assert_eq!("c6cd3c", prefix("df.citizen.samsara"));
     }
 }
 
