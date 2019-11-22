@@ -1,4 +1,4 @@
-//use std::fmt;
+use std::fmt;
 use super::util;
 
 static EMPTY_HASH: &'static str = "e3b0c44298fc1c14";
@@ -21,7 +21,7 @@ fn sawtooth_build_family(name: &str) -> &str {
     match name {
         "000000" | "settings" => "000000",
         "00001d" | "identity" => "00001d",
-        _ => panic!("unknown family"),
+        x => x,
     }
 }
 
@@ -72,42 +72,34 @@ mod tests {
     }
 }
 
-/*
-pub trait Namespace: fmt::Display+std::marker::Copy {
-    fn make_address(&self, input: &str) -> String;
-    fn name(&self) -> &'static str;
-    fn prefix(&self) -> &'static str;
-}
-*/
 // -----------------------------------------------------------------------------
-/*
-#[derive(Debug, Clone, Copy)]
-struct GeneralNS {
-    name: &'static str,
-    prefix: &'static str,
+
+pub trait Namespace: fmt::Display {
+    fn make_address(&self, input: &str) -> String;
+    fn name(&self) -> &str;
+    fn prefix(&self) -> &str;
+}
+
+// -----------------------------------------------------------------------------
+
+pub struct GeneralNS {
+    name: String,
+    prefix: String,
 }
 
 impl Namespace for GeneralNS {
     
-    fn name(&self) -> &'static str {
-        self.name
+    fn name(&self) -> &str {
+        &self.name
     }
 
-    fn prefix(&self) -> &'static str {
-        self.prefix
+    fn prefix(&self) -> &str {
+        &self.prefix
     }
 
     fn make_address(&self, input: &str) -> String {
-
-        let mut ret = String::new();
-
-        ret.push_str(&self.prefix);
-        ret.push_str(&util::sha512(input)[..64]);
-
-        ret
+        address(&self.prefix, input)
     }
-
-    
 }
 
 impl fmt::Display for GeneralNS {
@@ -115,9 +107,9 @@ impl fmt::Display for GeneralNS {
         write!(f, "name: {}, prefix: {}", self.name, self.prefix)
     }
 }
-*/
-// ----------------------------------------------------------------------------
-/*
+
+// -----------------------------------------------------------------------------
+
 #[derive(Debug, Clone, Copy)]
 struct SawtoothNS {
     name: &'static str,
@@ -125,30 +117,16 @@ struct SawtoothNS {
 }
 
 impl Namespace for SawtoothNS {
-    fn name(&self) -> &'static str {
+    fn name(&self) -> &str {
         self.name
     }
 
-    fn prefix(&self) -> &'static str {
+    fn prefix(&self) -> &str {
         self.prefix
     }
 
     fn make_address(&self, input: &str) -> String {
-
-        let mut ret = String::new();
-        ret.push_str(&self.prefix);
-        
-        let tmp: Vec<&str> = input.splitn(4, ".").collect();
-        for x in tmp.iter() {
-            ret.push_str(&util::sha256(x)[..16]);
-        }
-
-        if tmp.len() < 4 {
-            for _ in 0..(4-tmp.len()) {
-                ret.push_str(EMPTY_HASH);
-            }
-        }
-        ret
+        sawtooth_address(self.prefix, input)
     }
 }
 
@@ -157,42 +135,38 @@ impl fmt::Display for SawtoothNS {
         write!(f, "sawtooth: {}, prefix: {}", self.name, self.prefix)
     }
 }
-*/
-// ----------------------------------------------------------------------------
-/*
-fn prefix(name: &str) -> &'static str {
-    &util::sha512(name)[..6]
-}
 
-pub fn new(name: &'static str) -> impl Namespace {
-    GeneralNS {
-        name: name,
+// -----------------------------------------------------------------------------
+
+pub fn new(name: &str) -> Box<dyn Namespace> {
+    Box::new(GeneralNS {
+        name: name.to_string(),
         prefix: prefix(name),
-    }
+    })
 }
 
-pub fn sawtooth(family: &str) -> impl Namespace {
+pub fn sawtooth(family: &str) -> Box<dyn Namespace> {
     match family {
         "000000" | "settings" => {
-            SawtoothNS {
+            Box::new(SawtoothNS {
                 name: "settings",
                 prefix: "000000",
-            }
+            })
         },
         "00001d" | "identity" => {
-            SawtoothNS {
+            Box::new(SawtoothNS {
                 name: "identity",
                 prefix: "00001d",
-            }
+            })
         },
-        _ => panic!("unknown family")
+        _ => new(family)
     }
 }
-*/
+
 // ----------------------------------------------------------------------------
-/*
+
 #[cfg(test)]
-mod tests {
+mod test_namespace {
     use super::*;
 
     #[test]
@@ -220,4 +194,3 @@ mod tests {
         assert_eq!("534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206", ns3.make_address("Śiva"));
     }
 }
-*/
