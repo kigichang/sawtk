@@ -1,15 +1,21 @@
 use std::collections::HashMap;
-use std::fmt;
 
 use sawtooth_sdk::messages::processor::TpProcessRequest;
 use sawtooth_sdk::processor::handler::ApplyError;
 use sawtooth_sdk::processor::handler::TransactionContext;
-use sawtooth_sdk::processor::handler::TransactionHandler;
 use protobuf::{self, Message};
 use crate::messages::request::TPRequest;
 
-use super::ns::{self, Namespace};
+// -----------------------------------------------------------------------------
 
+#[macro_export]
+macro_rules! invalid_transaction {
+    ($($x:tt)*) => {
+        ApplyError::InvalidTransaction(
+            format!($($x)*)
+        )
+    }
+}
 // -----------------------------------------------------------------------------
 
 pub struct States {
@@ -29,7 +35,10 @@ impl States {
     }
 
     pub fn to_message(&self, address: &str, msg: &mut dyn protobuf::Message) -> Result<(), ApplyError> {
-        let bytes = self.data.get(address).ok_or(ApplyError::InvalidTransaction(format!("{} not found", address)))?;
+        let bytes = self.data.get(address).ok_or(
+            //ApplyError::InvalidTransaction(format!("{} not found", address))
+            invalid_transaction!("{} not found", address)
+        )?;
         msg.merge_from_bytes(bytes).map_err(|e| ApplyError::InvalidTransaction(format!("{}", e)))?;
         Ok(())
     }
@@ -100,19 +109,15 @@ pub fn to_tp_request(req: &TpProcessRequest) -> Result<TPRequest, ApplyError> {
 // -----------------------------------------------------------------------------
 pub trait Validate: protobuf::Message {
     fn validate(&self) -> Result<(), ApplyError>;
-    fn new() -> Box<Self> where Self: Sized;
 }
 
 impl Validate for TPRequest {
     fn validate(&self) -> Result<(), ApplyError> {
         Ok(())
     }
-
-    fn new() -> Box<Self> {
-        Box::new(TPRequest::new())
-    }
 }
 
+/*
 // -----------------------------------------------------------------------------
 pub struct Context<'a> {
     ctx: &'a mut dyn TransactionContext,
@@ -173,17 +178,18 @@ impl<'a> Context<'a> {
 }
 
 // -----------------------------------------------------------------------------
+
 type Constructor = Box<(dyn (Fn() -> Box<dyn Validate>) + 'static)>;
 
 type HandleFunc = Box<(dyn (Fn(&mut Context, &dyn Validate) -> Result<(), ApplyError>) + 'static)>;
 
 
-pub fn make_constructor(f: impl Fn() -> Box<dyn Validate> + 'static) -> Constructor {
-    Box::new(f) as Constructor
+pub fn make_constructor<T: Validate>(f: impl Fn() -> Box<T> + 'static) -> Constructor {
+    Box::new( || -> Box <dyn Validate> { f() } ) as Constructor
 }
 
-pub fn make_handle_func(f: impl Fn(&mut Context, &dyn Validate) -> Result<(), ApplyError> + 'static) -> HandleFunc {
-    Box::new(f) as HandleFunc
+pub fn make_handle_func<T: Validate>(f: impl Fn(&mut Context, &T) -> Result<(), ApplyError> + 'static) -> HandleFunc {
+    Box::new(|c: &mut Context, r: &dyn Validate| -> Result<(), ApplyError> { f(c, r) } ) as HandleFunc
 }
 
 pub struct Handler {
@@ -205,7 +211,7 @@ impl Handler {
         }
     }
 
-    pub fn add(&mut self, cmd: i32, f: impl Fn(&mut Context, &dyn Validate) -> Result<(), ApplyError> + 'static, c: impl Fn() -> Box<dyn Validate> + 'static) {
+    pub fn add<T: Validate>(&mut self, cmd: i32, f: impl Fn(&mut Context, &T) -> Result<(), ApplyError> + 'static, c: impl Fn() -> Box<T> + 'static) {
         self.handles.insert(cmd, (make_handle_func(f), make_constructor(c)));
     }
 }
@@ -253,7 +259,7 @@ impl TransactionHandler for Handler {
             };
 
         new_req.validate()?;
-        
+
         let mut ctx = Context {
             ctx: context,
             origin: request,
@@ -263,3 +269,4 @@ impl TransactionHandler for Handler {
         h(&mut ctx, &*new_req)
     }
 }
+*/
