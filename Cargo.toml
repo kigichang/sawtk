@@ -15,7 +15,7 @@ description = """\
 sha2 = "0.8.0"
 byteorder = "1.2"
 uuid =  { version = "0.8.1", features = ["serde", "v4", "v1"] }
-sawtooth-sdk = { path = "../sawtooth/sawtooth-sdk-rust" }
+sawtooth-sdk = { path = "../sawtooth/sawtooth-sdk-rust", version = "0.4.1" }
 bs58 = "0.3.0"
 protobuf="2"
 
