@@ -17,6 +17,10 @@ pub fn address(prefix: &str, key: &str) -> String {
     ret
 }
 
+pub fn is_address(test: &str) -> bool {
+    test.len() == 70
+}
+
 fn sawtooth_build_family(name: &str) -> &str {
     match name {
         "000000" | "settings" => "000000",
@@ -37,9 +41,10 @@ pub fn sawtooth_address(prefix_or_family: &str, key: &str) -> String {
         }
 
         if tmp.len() < 4 {
-            for _ in 0..(4-tmp.len()) {
-                ret.push_str(EMPTY_HASH);
-            }
+            //for _ in 0..(4-tmp.len()) {
+            //    ret.push_str(EMPTY_HASH);
+            //}
+            ret.push_str(&EMPTY_HASH.repeat(4-tmp.len()));
         }
         ret
 }
