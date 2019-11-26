@@ -28,13 +28,13 @@ impl States {
         self.data.contains_key(address)
     }
 
-    pub fn to<T: protobuf::Message>(&self, address: &str) -> Result<T, ApplyError> {
+    pub fn get<T: protobuf::Message>(&self, address: &str) -> Result<T, ApplyError> {
         let mut msg = T::new();
-        self.to_message(address, &mut msg)?;
+        self.get_message(address, &mut msg)?;
         Ok(msg)
     }
 
-    pub fn to_message(&self, address: &str, msg: &mut dyn protobuf::Message) -> Result<(), ApplyError> {
+    pub fn get_message(&self, address: &str, msg: &mut dyn protobuf::Message) -> Result<(), ApplyError> {
         let bytes = self.data.get(address).ok_or(
             invalid_transaction!("{} not found", address)
         )?;
@@ -67,7 +67,7 @@ pub fn get_state_entries(ctx: &dyn TransactionContext, addresses: Vec<String>) -
 
 pub fn get_state_entry<T: protobuf::Message>(ctx: &dyn TransactionContext, address: &str) -> Result<T, ApplyError> {
     get_state_entries(ctx, vec![address.to_string()])?
-        .to::<T>(address)
+        .get::<T>(address)
 }
 
 
