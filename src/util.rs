@@ -16,7 +16,7 @@ pub enum Error {
 */
 
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 /// Converts bytes to hex string.
 pub fn bytes_to_hex_str(bytes: &[u8]) -> String {
@@ -37,6 +37,37 @@ pub fn hex_str_to_bytes(hexstr: &str) -> Result<Vec<u8>> {
     Ok(ret)
 }
 
+pub fn is_hex_str(test: &str) -> bool {
+    is_hex(test).is_ok()
+}
+
+fn is_hex(hexstr: &str) -> Result<()> {
+    let size = hexstr.len();
+
+    if size % 2 != 0 {
+        return Err(Error::OddLengthString(size));
+    }
+
+    for (idx, ch) in hexstr.chars().enumerate() {
+        if !ch.is_digit(16) {
+            return Err(Error::InvalidChar(idx, ch));
+        }
+    }
+
+    Ok(())
+}
+//------------------------------------------------------------------------------
+
+pub fn is_public_key(key: &str) -> bool {
+    if key.len() != 66 {
+        return false;
+    }
+
+    is_hex_str(key)
+}
+
+//------------------------------------------------------------------------------
+
 pub fn sha256(input: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.input(input);
@@ -56,6 +87,8 @@ pub fn sha512_raw(input: &[u8]) -> Vec<u8> {
     Vec::from(hasher.result().as_slice())
 }
 
+//------------------------------------------------------------------------------
+
 pub fn sha512(input: &str) -> String {
     let mut hasher = Sha512::new();
     hasher.input(input);
@@ -68,39 +101,23 @@ pub fn sha512_bytes(input: &[u8]) -> String {
     bytes_to_hex_str(&hasher.result())
 }
 
-fn is_hex(hexstr: &str) -> Result<()> {
-    let size = hexstr.len();
-
-    if size % 2 != 0 {
-        return Err(Error::OddLengthString(size));
-    }
-
-    for (idx, ch) in hexstr.chars().enumerate() {
-        if !ch.is_digit(16) {
-            return Err(Error::InvalidChar(idx, ch));
-        }
-    }
-
-    Ok(())
-}
-
-pub fn is_hex_str(test: &str) -> bool {
-    is_hex(test).is_ok()
-}
-
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 pub fn uuid() -> String {
     Uuid::new_v4().to_hyphenated().to_string()
 }
 
-//-----------------------------------------------------------------------------
+pub fn is_uuid(_test: &str) -> bool {
+    // TODO: verify uuid string.
+    true
+}
+//------------------------------------------------------------------------------
 
 pub fn nonce() -> String {
     uuid()
 }
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
 #[cfg(test)]
 mod tests {
