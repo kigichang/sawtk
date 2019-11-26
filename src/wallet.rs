@@ -23,14 +23,17 @@ fn check_encode(input: &[u8], version: u8) -> String {
     bs58::encode(&b).into_string()
 }
 
-//fn check_decode(input: &str)
-
 pub fn new(input: &[u8]) -> String {
     return check_encode(input, input[0]);
 }
 
 pub fn from_hex(hexstr: &str) -> Result<String> {
     hex_str_to_bytes(hexstr).map(|x| new(&x))
+}
+
+pub fn is_wallet(_test: &str) -> bool {
+    // TODO: verify wallet is ok ?
+    true
 }
 
 #[cfg(test)]
