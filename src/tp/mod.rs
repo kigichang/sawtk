@@ -104,16 +104,20 @@ pub fn add_event(ctx: &dyn TransactionContext, event_type: String, attributes: V
 // -----------------------------------------------------------------------------
 
 pub fn to_tp_request(req: &TpProcessRequest) -> Result<TPRequest, ApplyError> {
-    protobuf::parse_from_bytes::<TPRequest>(&req.payload).map_err(|e| invalid_transaction!("{}", e))
+   to_message::<TPRequest>(&req.payload)
+}
+
+pub fn to_message<T: protobuf::Message>(bytes: &[u8]) -> Result<T, ApplyError> {
+    protobuf::parse_from_bytes::<T>(bytes).map_err(|e| invalid_transaction!("{}", e))
 }
 
 // -----------------------------------------------------------------------------
 pub trait Validate: protobuf::Message {
-    fn validate(&self) -> Result<(), ApplyError>;
+    fn validate(&mut self) -> Result<(), ApplyError>;
 }
 
 impl Validate for TPRequest {
-    fn validate(&self) -> Result<(), ApplyError> {
+    fn validate(&mut self) -> Result<(), ApplyError> {
         Ok(())
     }
 }
