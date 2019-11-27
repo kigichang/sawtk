@@ -42,7 +42,8 @@ pub enum Error {
 
 /// Converts bytes to hex string.
 pub fn bytes_to_hex_str(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{:02x}", byte)).collect::<Vec<_>>().join("")
+    bytes.iter().map(|byte| format!("{:02x}", byte))
+        .collect::<Vec<_>>().join("")
 }
 
 // Converts hex string to bytes.
@@ -53,7 +54,10 @@ pub fn hex_str_to_bytes(hexstr: &str) -> Result<Vec<u8>> {
 
     let ret: Vec<u8> = tmp.chunks(2)
         .map(|c| {
-            ((c[0].to_digit(16).unwrap() << 4) | (c[1].to_digit(16).unwrap())) as u8
+            (
+                (c[0].to_digit(16).unwrap() << 4) | 
+                (c[1].to_digit(16).unwrap())
+            ) as u8
         }).collect();
 
     Ok(ret)

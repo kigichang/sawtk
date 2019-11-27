@@ -71,16 +71,12 @@ impl States {
 
 impl From<Vec<(String, Vec<u8>)>> for States {
     fn from(result: Vec<(String, Vec<u8>)>) -> Self {
-        let mut data = HashMap::new();
-
-        for rs in result.into_iter() {
-            data.insert(rs.0, rs.1);
+        States { data: result.into_iter()
+                    .map(|rs| (rs.0, rs.1))
+                    .collect::<HashMap<_, _>>() 
         }
-
-        States { data: data }
     }
 }
-
 
 // -----------------------------------------------------------------------------
 
