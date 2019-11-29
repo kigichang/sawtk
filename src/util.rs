@@ -165,5 +165,12 @@ mod tests {
     fn test_uuid() {
         println!("{}", uuid());
     }
+
+    #[test]
+    fn test_public_key() {
+        assert!(
+            is_public_key("03d73e65987f716a33fb2cf1bec01711c6bee200b90143ee656f1282fdd1276a9c")
+        )
+    }
 }
 
