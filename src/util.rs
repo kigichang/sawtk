@@ -133,9 +133,8 @@ pub fn uuid() -> String {
     Uuid::new_v4().to_hyphenated().to_string()
 }
 
-pub fn is_uuid(_test: &str) -> bool {
-    // TODO: verify uuid string.
-    true
+pub fn is_uuid(test: &str) -> bool {
+    Uuid::parse_str(test).is_ok()
 }
 //------------------------------------------------------------------------------
 
@@ -163,7 +162,8 @@ mod tests {
 
     #[test]
     fn test_uuid() {
-        println!("{}", uuid());
+        let id = uuid();
+        assert!(is_uuid(&id));
     }
 
     #[test]

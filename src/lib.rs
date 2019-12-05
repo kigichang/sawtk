@@ -29,6 +29,7 @@ extern crate bs58;
 
 use protobuf::ProtobufError;
 use sawtooth_sdk::signing::Error as SignErr;
+use bs58::decode::Error as bs58dErr;
 use std::{error, fmt, result};
 
 // utility for dataforce.
@@ -50,6 +51,10 @@ pub enum Error {
     OddLengthString(usize),
     Protobuf(ProtobufError),
     Signing(SignErr),
+    InvalidLength(usize),
+    InvalidVersion(u8, u8),
+    BS58(bs58dErr),
+    CheckSum,
 }
 
 impl fmt::Display for Error {
@@ -59,6 +64,10 @@ impl fmt::Display for Error {
             Error::OddLengthString(len) => write!(f, "odd hex string length {}", len),
             Error::Protobuf(e) => write!(f, "encode/decode proto message {}", e),
             Error::Signing(e) => e.fmt(f),
+            Error::InvalidLength(len) => write!(f, "invalid length {}", len),
+            Error::InvalidVersion(test, ans) => write!(f, "invalid version {}, must be {}", test, ans),
+            Error::BS58(e) => write!(f, "base58 decode: {:?}", e),
+            Error::CheckSum => write!(f, "checksum not match")
         }
     }
 }
@@ -68,6 +77,7 @@ impl error::Error for Error {
         match &self {
             Error::Protobuf(ref e) => Some(e),
             Error::Signing(ref e) => Some(e),
+            Error::BS58(ref e) => Some(e),
             _ => None,
         }
     }
@@ -78,6 +88,10 @@ impl error::Error for Error {
             Error::OddLengthString(_) => "odd hex string length",
             Error::Protobuf(_) => "encode/decode proto message failure",
             Error::Signing(_) => "signing error",
+            Error::InvalidLength(_) => "invalid length",
+            Error::InvalidVersion(_, _) => "invalid version",
+            Error::BS58(_) => "base58 decode failure",
+            Error::CheckSum => "checksum not match",
         }
     }
 }
