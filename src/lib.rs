@@ -1,6 +1,6 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2019 Kigi Chang
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -9,7 +9,7 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
 
@@ -23,13 +23,13 @@
  *
 */
 
+extern crate bs58;
 extern crate sha2;
 extern crate uuid;
-extern crate bs58;
 
+use bs58::decode::Error as bs58dErr;
 use protobuf::ProtobufError;
 use sawtooth_sdk::signing::Error as SignErr;
-use bs58::decode::Error as bs58dErr;
 use std::{error, fmt, result};
 
 // utility for dataforce.
@@ -37,11 +37,11 @@ pub mod util;
 pub mod wallet;
 
 // sawtooth toolkit
-pub mod ns;
-pub mod tx;
-pub mod tp;
-pub mod signing;
 pub mod messages;
+pub mod ns;
+pub mod signing;
+pub mod tp;
+pub mod tx;
 
 // ----------------------------------------------------------------------------
 
@@ -65,9 +65,11 @@ impl fmt::Display for Error {
             Error::Protobuf(e) => write!(f, "encode/decode proto message {}", e),
             Error::Signing(e) => e.fmt(f),
             Error::InvalidLength(len) => write!(f, "invalid length {}", len),
-            Error::InvalidVersion(test, ans) => write!(f, "invalid version {}, must be {}", test, ans),
+            Error::InvalidVersion(test, ans) => {
+                write!(f, "invalid version {}, must be {}", test, ans)
+            }
             Error::BS58(e) => write!(f, "base58 decode: {:?}", e),
-            Error::CheckSum => write!(f, "checksum not match")
+            Error::CheckSum => write!(f, "checksum not match"),
         }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2019 Kigi Chang
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -9,7 +9,7 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
 
@@ -23,9 +23,9 @@
  *
 */
 
-use sha2::{Sha256, Sha512, Digest};
+use super::{Error, Result};
+use sha2::{Digest, Sha256, Sha512};
 use uuid::Uuid;
-use super::{Result, Error};
 
 //-----------------------------------------------------------------------------
 
@@ -37,13 +37,15 @@ pub enum Error {
 }
 */
 
-
 //------------------------------------------------------------------------------
 
 /// Converts bytes to hex string.
 pub fn bytes_to_hex_str(bytes: &[u8]) -> String {
-    bytes.iter().map(|byte| format!("{:02x}", byte))
-        .collect::<Vec<_>>().join("")
+    bytes
+        .iter()
+        .map(|byte| format!("{:02x}", byte))
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 // Converts hex string to bytes.
@@ -52,13 +54,10 @@ pub fn hex_str_to_bytes(hexstr: &str) -> Result<Vec<u8>> {
 
     let tmp = hexstr.chars().collect::<Vec<_>>();
 
-    let ret: Vec<u8> = tmp.chunks(2)
-        .map(|c| {
-            (
-                (c[0].to_digit(16).unwrap() << 4) | 
-                (c[1].to_digit(16).unwrap())
-            ) as u8
-        }).collect();
+    let ret: Vec<u8> = tmp
+        .chunks(2)
+        .map(|c| ((c[0].to_digit(16).unwrap() << 4) | (c[1].to_digit(16).unwrap())) as u8)
+        .collect();
 
     Ok(ret)
 }
@@ -99,7 +98,6 @@ pub fn sha256(input: &str) -> String {
     hasher.input(input);
     bytes_to_hex_str(&hasher.result())
 }
-
 
 pub fn sha256_raw(input: &[u8]) -> Vec<u8> {
     let mut hasher = Sha256::new();
@@ -150,8 +148,10 @@ mod tests {
 
     #[test]
     fn test_sha256() {
-        assert_eq!("b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9", 
-        sha256("hello world"))
+        assert_eq!(
+            "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9",
+            sha256("hello world")
+        )
     }
 
     #[test]
@@ -168,9 +168,8 @@ mod tests {
 
     #[test]
     fn test_public_key() {
-        assert!(
-            is_public_key("03d73e65987f716a33fb2cf1bec01711c6bee200b90143ee656f1282fdd1276a9c")
-        )
+        assert!(is_public_key(
+            "03d73e65987f716a33fb2cf1bec01711c6bee200b90143ee656f1282fdd1276a9c"
+        ))
     }
 }
-

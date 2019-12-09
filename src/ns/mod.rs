@@ -1,6 +1,6 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2019 Kigi Chang
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -9,7 +9,7 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
 
@@ -23,8 +23,8 @@
  *
 */
 
-use std::fmt;
 use super::util;
+use std::fmt;
 
 static EMPTY_HASH: &'static str = "e3b0c44298fc1c14";
 
@@ -32,7 +32,6 @@ static EMPTY_HASH: &'static str = "e3b0c44298fc1c14";
 
 pub fn prefix(name: &str) -> String {
     String::from(&util::sha512(name)[..6])
-    
 }
 
 pub fn address(prefix: &str, key: &str) -> String {
@@ -58,20 +57,20 @@ pub fn sawtooth_address(prefix_or_family: &str, key: &str) -> String {
     let prefix = sawtooth_build_family(prefix_or_family);
 
     let mut ret = String::new();
-        ret.push_str(prefix);
-        
-        let tmp: Vec<&str> = key.splitn(4, ".").collect();
-        for x in tmp.iter() {
-            ret.push_str(&util::sha256(x)[..16]);
-        }
+    ret.push_str(prefix);
 
-        if tmp.len() < 4 {
-            //for _ in 0..(4-tmp.len()) {
-            //    ret.push_str(EMPTY_HASH);
-            //}
-            ret.push_str(&EMPTY_HASH.repeat(4-tmp.len()));
-        }
-        ret
+    let tmp: Vec<&str> = key.splitn(4, ".").collect();
+    for x in tmp.iter() {
+        ret.push_str(&util::sha256(x)[..16]);
+    }
+
+    if tmp.len() < 4 {
+        //for _ in 0..(4-tmp.len()) {
+        //    ret.push_str(EMPTY_HASH);
+        //}
+        ret.push_str(&EMPTY_HASH.repeat(4 - tmp.len()));
+    }
+    ret
 }
 
 // -----------------------------------------------------------------------------
@@ -84,16 +83,34 @@ mod tests {
     fn test_ns() {
         let ns1 = "intkey";
         assert_eq!("1cf126", prefix(ns1));
-        
-        assert_eq!("000000a87cb5eafdcca6a8b79606fb3afea5bdab274474a6aa82c1c0cbf0fbcaf64c0b", sawtooth_address("settings", "sawtooth.config.vote.proposals"));
-        assert_eq!("0000005e50f405ace6cbdfe3b0c44298fc1c14e3b0c44298fc1c14e3b0c44298fc1c14", sawtooth_address("settings", "mykey"));
-        assert_eq!("0000008923f4638a4a5030ab27b729d9cc4cb1e3b0c44298fc1c14e3b0c44298fc1c14", sawtooth_address("settings", "diviner.exchange"));
+
+        assert_eq!(
+            "000000a87cb5eafdcca6a8b79606fb3afea5bdab274474a6aa82c1c0cbf0fbcaf64c0b",
+            sawtooth_address("settings", "sawtooth.config.vote.proposals")
+        );
+        assert_eq!(
+            "0000005e50f405ace6cbdfe3b0c44298fc1c14e3b0c44298fc1c14e3b0c44298fc1c14",
+            sawtooth_address("settings", "mykey")
+        );
+        assert_eq!(
+            "0000008923f4638a4a5030ab27b729d9cc4cb1e3b0c44298fc1c14e3b0c44298fc1c14",
+            sawtooth_address("settings", "diviner.exchange")
+        );
 
         let ns3 = prefix("df.bigbang");
         assert_eq!("534d8f", prefix("df.bigbang"));
-        assert_eq!("534d8ffcfc87efb413bc331581b60745073e3fa69e96ada01beca2e4c1aebca1a1f892", address(&ns3, "Brahmā"));
-        assert_eq!("534d8fb42a9d85eebee9a4b8613bb399e3f3345e73535acac74ca700ef7e9e2f848a0a", address(&ns3, "Viṣṇu"));
-        assert_eq!("534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206", address(&ns3, "Śiva"));
+        assert_eq!(
+            "534d8ffcfc87efb413bc331581b60745073e3fa69e96ada01beca2e4c1aebca1a1f892",
+            address(&ns3, "Brahmā")
+        );
+        assert_eq!(
+            "534d8fb42a9d85eebee9a4b8613bb399e3f3345e73535acac74ca700ef7e9e2f848a0a",
+            address(&ns3, "Viṣṇu")
+        );
+        assert_eq!(
+            "534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206",
+            address(&ns3, "Śiva")
+        );
 
         assert_eq!("cc207f", prefix("df.citizen.citizen"));
         assert_eq!("69e807", prefix("df.citizen.service"));
@@ -118,7 +135,6 @@ pub struct GeneralNS {
 }
 
 impl Namespace for GeneralNS {
-    
     fn name(&self) -> &str {
         &self.name
     }
@@ -177,19 +193,15 @@ pub fn new(name: &str) -> Box<dyn Namespace> {
 
 pub fn sawtooth(family: &str) -> Box<dyn Namespace> {
     match family {
-        "000000" | "settings" => {
-            Box::new(SawtoothNS {
-                name: "settings",
-                prefix: "000000",
-            })
-        },
-        "00001d" | "identity" => {
-            Box::new(SawtoothNS {
-                name: "identity",
-                prefix: "00001d",
-            })
-        },
-        _ => new(family)
+        "000000" | "settings" => Box::new(SawtoothNS {
+            name: "settings",
+            prefix: "000000",
+        }),
+        "00001d" | "identity" => Box::new(SawtoothNS {
+            name: "identity",
+            prefix: "00001d",
+        }),
+        _ => new(family),
     }
 }
 
@@ -209,18 +221,35 @@ mod test_namespace {
 
         assert_eq!("000000", ns2.prefix());
         assert_eq!("settings", ns2.name());
-        
-        assert_eq!("000000a87cb5eafdcca6a8b79606fb3afea5bdab274474a6aa82c1c0cbf0fbcaf64c0b", ns2.make_address("sawtooth.config.vote.proposals"));
-        assert_eq!("0000005e50f405ace6cbdfe3b0c44298fc1c14e3b0c44298fc1c14e3b0c44298fc1c14", ns2.make_address("mykey"));
-        assert_eq!("0000008923f4638a4a5030ab27b729d9cc4cb1e3b0c44298fc1c14e3b0c44298fc1c14", ns2.make_address("diviner.exchange"));
 
+        assert_eq!(
+            "000000a87cb5eafdcca6a8b79606fb3afea5bdab274474a6aa82c1c0cbf0fbcaf64c0b",
+            ns2.make_address("sawtooth.config.vote.proposals")
+        );
+        assert_eq!(
+            "0000005e50f405ace6cbdfe3b0c44298fc1c14e3b0c44298fc1c14e3b0c44298fc1c14",
+            ns2.make_address("mykey")
+        );
+        assert_eq!(
+            "0000008923f4638a4a5030ab27b729d9cc4cb1e3b0c44298fc1c14e3b0c44298fc1c14",
+            ns2.make_address("diviner.exchange")
+        );
 
         let ns3 = new("df.bigbang");
 
         assert_eq!("534d8f", ns3.prefix());
         assert_eq!("df.bigbang", ns3.name());
-        assert_eq!("534d8ffcfc87efb413bc331581b60745073e3fa69e96ada01beca2e4c1aebca1a1f892", ns3.make_address("Brahmā"));
-        assert_eq!("534d8fb42a9d85eebee9a4b8613bb399e3f3345e73535acac74ca700ef7e9e2f848a0a", ns3.make_address("Viṣṇu"));
-        assert_eq!("534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206", ns3.make_address("Śiva"));
+        assert_eq!(
+            "534d8ffcfc87efb413bc331581b60745073e3fa69e96ada01beca2e4c1aebca1a1f892",
+            ns3.make_address("Brahmā")
+        );
+        assert_eq!(
+            "534d8fb42a9d85eebee9a4b8613bb399e3f3345e73535acac74ca700ef7e9e2f848a0a",
+            ns3.make_address("Viṣṇu")
+        );
+        assert_eq!(
+            "534d8fd1d32f37d7463d420fb6bea4c0c7cdb838a2d812942745659637f3eb502e4206",
+            ns3.make_address("Śiva")
+        );
     }
 }

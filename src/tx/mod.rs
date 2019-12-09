@@ -1,6 +1,6 @@
 /*
  * MIT License
- * 
+ *
  * Copyright (c) 2019 Kigi Chang
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -9,7 +9,7 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
 
@@ -23,14 +23,12 @@
  *
 */
 
-use protobuf::{self,RepeatedField, Message};
-use sawtooth_sdk::messages::transaction::{TransactionHeader, Transaction};
-use sawtooth_sdk::messages::batch::{BatchHeader, Batch, BatchList};
-use super::{Result, Error};
 use super::signing::Signer;
+use super::{Error, Result};
 use crate::util::{nonce, sha512_bytes};
-
-
+use protobuf::{self, Message, RepeatedField};
+use sawtooth_sdk::messages::batch::{Batch, BatchHeader, BatchList};
+use sawtooth_sdk::messages::transaction::{Transaction, TransactionHeader};
 
 // ----------------------------------------------------------------------------
 
@@ -44,33 +42,29 @@ pub struct Payload {
 
 impl Payload {
     pub fn new(
-        family_name:    String, 
-        family_version: String, 
-        msg:            &dyn Message, 
-        inputs:         &[String], 
-        outputs:        &[String]
+        family_name: String,
+        family_version: String,
+        msg: &dyn Message,
+        inputs: &[String],
+        outputs: &[String],
     ) -> Result<Self> {
-
         msg.write_to_bytes()
-            .map(|b| {
-                Payload { 
-                    family_name: family_name,
-                    family_version: family_version,
-                    payload: b,
-                    inputs: Vec::from(inputs),
-                    outputs: Vec::from(outputs),
-                }
+            .map(|b| Payload {
+                family_name: family_name,
+                family_version: family_version,
+                payload: b,
+                inputs: Vec::from(inputs),
+                outputs: Vec::from(outputs),
             })
             .map_err(|e| Error::Protobuf(e))
     }
 
     pub fn tx_header(
-            &self, 
-            batcher_public_key: &str, 
-            signer_public_key:  &str, 
-            dependencies:       &[String]
+        &self,
+        batcher_public_key: &str,
+        signer_public_key: &str,
+        dependencies: &[String],
     ) -> TransactionHeader {
-
         TransactionHeader {
             batcher_public_key: String::from(batcher_public_key),
             dependencies: RepeatedField::from_slice(dependencies),
@@ -101,21 +95,19 @@ impl<'a> Builder<'a> {
         &self,
         batcher_public_key: &str,
         data: &Payload,
-        dependencies: &[String]
+        dependencies: &[String],
     ) -> Result<TransactionHeader> {
-
         let signer_public_key = self.signer.get_public_key()?;
 
         Ok(data.tx_header(batcher_public_key, &signer_public_key, dependencies))
     }
 
     pub fn build(
-        &self, 
-        batcher_public_key: &str, 
-        data:               &Payload, 
-        dependencies:       &[String]
+        &self,
+        batcher_public_key: &str,
+        data: &Payload,
+        dependencies: &[String],
     ) -> Result<Transaction> {
-
         let header = self.header(batcher_public_key, data, dependencies)?;
         let mut header_bytes: Vec<u8> = Vec::new();
 
@@ -151,16 +143,16 @@ impl<'a> Batcher<'a> {
 
     fn header(&self, transactions: &[Transaction]) -> Result<BatchHeader> {
         let pub_key = self.get_public_key()?;
-        let ids:Vec<String> = transactions.iter().map(|x| String::from(&x.header_signature)).collect();
+        let ids: Vec<String> = transactions
+            .iter()
+            .map(|x| String::from(&x.header_signature))
+            .collect();
 
-
-        Ok(
-            BatchHeader {
-                signer_public_key: pub_key,
-                transaction_ids: RepeatedField::from(ids),
-                ..BatchHeader::default()
-            }
-        )
+        Ok(BatchHeader {
+            signer_public_key: pub_key,
+            transaction_ids: RepeatedField::from(ids),
+            ..BatchHeader::default()
+        })
     }
 
     pub fn build(&self, transactions: &[Transaction]) -> Result<Batch> {
@@ -171,14 +163,12 @@ impl<'a> Batcher<'a> {
             Err(e) => Err(Error::Protobuf(e)),
             Ok(_) => {
                 let sign = self.signer.sign(&header_bytes)?;
-                Ok(
-                    Batch {
-                        header: header_bytes,
-                        header_signature: sign,
-                        transactions: RepeatedField::from(transactions),
-                        ..Batch::default()
-                    }
-                )
+                Ok(Batch {
+                    header: header_bytes,
+                    header_signature: sign,
+                    transactions: RepeatedField::from(transactions),
+                    ..Batch::default()
+                })
             }
         }
     }
