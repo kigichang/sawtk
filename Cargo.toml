@@ -1,6 +1,6 @@
 [package]
 name = "sawtk"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["kigi <kigi.chang@gmail.com>"]
 edition = "2018"
 build = "build.rs"
@@ -13,11 +13,11 @@ description = """\
 
 [dependencies]
 sha2 = "0.8.0"
+ripemd160="0.8.0"
 uuid =  { version = "0.8.1", features = ["serde", "v4", "v1"] }
 #sawtooth-sdk = { path = "../sawtooth/sawtooth-sdk-rust", version = "0.4.1" }
 sawtooth-sdk = "0.4.0"
-#bs58 = { version = "0.3.0", features = ["check"] }
-bs58 = "0.3.0"
+bs58 = { version = "0.3.0", features = ["check"] }
 protobuf="2"
 
 [build-dependencies]

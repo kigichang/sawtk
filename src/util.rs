@@ -24,6 +24,7 @@
 */
 
 use super::{Error, Result};
+use ripemd160::Ripemd160;
 use sha2::{Digest, Sha256, Sha512};
 use uuid::Uuid;
 
@@ -102,16 +103,16 @@ pub fn sha256(input: &str) -> String {
 pub fn sha256_raw(input: &[u8]) -> Vec<u8> {
     let mut hasher = Sha256::new();
     hasher.input(input);
-    Vec::from(hasher.result().as_slice())
+    hasher.result().to_vec()
 }
+
+//------------------------------------------------------------------------------
 
 pub fn sha512_raw(input: &[u8]) -> Vec<u8> {
     let mut hasher = Sha512::new();
     hasher.input(input);
-    Vec::from(hasher.result().as_slice())
+    hasher.result().to_vec()
 }
-
-//------------------------------------------------------------------------------
 
 pub fn sha512(input: &str) -> String {
     let mut hasher = Sha512::new();
@@ -123,6 +124,14 @@ pub fn sha512_bytes(input: &[u8]) -> String {
     let mut hasher = Sha512::new();
     hasher.input(input);
     bytes_to_hex_str(&hasher.result())
+}
+
+//------------------------------------------------------------------------------
+
+pub fn ripemd160_raw(input: &[u8]) -> Vec<u8> {
+    let mut hasher = Ripemd160::new();
+    hasher.input(input);
+    hasher.result().to_vec()
 }
 
 //------------------------------------------------------------------------------
