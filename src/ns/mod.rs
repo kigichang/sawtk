@@ -185,14 +185,7 @@ impl fmt::Display for SawtoothNS {
 // -----------------------------------------------------------------------------
 
 pub fn new(name: &str) -> Box<dyn Namespace> {
-    Box::new(GeneralNS {
-        name: name.to_string(),
-        prefix: prefix(name),
-    })
-}
-
-pub fn sawtooth(family: &str) -> Box<dyn Namespace> {
-    match family {
+    match name {
         "000000" | "settings" => Box::new(SawtoothNS {
             name: "settings",
             prefix: "000000",
@@ -201,8 +194,15 @@ pub fn sawtooth(family: &str) -> Box<dyn Namespace> {
             name: "identity",
             prefix: "00001d",
         }),
-        _ => new(family),
+        _ => Box::new(GeneralNS {
+            name: name.to_string(),
+            prefix: prefix(name),
+        }),
     }
+}
+
+pub fn sawtooth(family: &str) -> Box<dyn Namespace> {
+    new(family)
 }
 
 // ----------------------------------------------------------------------------
