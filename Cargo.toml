@@ -11,6 +11,8 @@ description = """\
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+exclude = ["tools"]
+
 [dependencies]
 sha2 = "0.8.0"
 ripemd160="0.8.0"
