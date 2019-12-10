@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 extern crate sawtk;
 
@@ -53,7 +54,7 @@ fn load_private_key(file_name: &str) {
 
 fn main() -> Result<(), String> {
     let matches = App::new("private key tool")
-        .version("0.1.0")
+        .version(crate_version!())
         .author("Kigi Chang <kigi.chang@gmail.com>")
         .subcommand(
             SubCommand::with_name("gen")
