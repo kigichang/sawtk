@@ -3,7 +3,7 @@ extern crate clap;
 extern crate sawtk;
 
 use clap::{App, Arg};
-use sawtk::ns;
+use sawtk::namespace;
 use std::env;
 
 fn main() {
@@ -28,12 +28,12 @@ fn main() {
 
     let name = matches.value_of("name").unwrap();
 
-    let namespace = ns::new(&name);
-    println!("name: {}, prefix: {}", namespace.name(), namespace.prefix());
+    let ns = namespace::new(&name);
+    println!("name: {}, prefix: {}", ns.name(), ns.prefix());
 
     let test = matches.value_of("input").unwrap();
 
     for x in test.split(",").collect::<Vec<_>>().iter() {
-        println!("{}:{}", x, namespace.make_address(x));
+        println!("{}:{}", x, ns.make_address(x));
     }
 }

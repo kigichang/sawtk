@@ -38,7 +38,7 @@ pub mod wallet;
 
 // sawtooth toolkit
 pub mod messages;
-pub mod ns;
+pub mod namespace;
 pub mod signing;
 pub mod tp;
 pub mod tx;
