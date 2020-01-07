@@ -88,7 +88,7 @@ impl From<Vec<(String, Vec<u8>)>> for States {
 pub fn get_state_entries(
     ctx: &dyn TransactionContext,
     addresses: Vec<String>,
-) -> Result<(States), ApplyError> {
+) -> Result<States, ApplyError> {
     let result = ctx
         .get_state_entries(&addresses)
         .map_err(|e| invalid_transaction!("{}", e))?;
